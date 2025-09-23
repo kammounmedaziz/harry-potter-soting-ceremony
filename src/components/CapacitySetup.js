@@ -120,14 +120,28 @@ const HouseInputCard = styled.div`
 const HouseHeader = styled.div`
   display: flex;
   align-items: center;
+  justify-content: center;
   margin-bottom: 1rem;
 `;
 
 const HouseEmblem = styled.span`
-  font-size: 2rem;
-  margin-right: 1rem;
+  font-size: 7rem;
   animation: float 3s ease-in-out infinite;
   animation-delay: ${props => props.delay}s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 10, 0.9);
+  border-radius: 20px;
+  padding: 1.5rem;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  
+  img {
+    width: 7rem;
+    height: 7rem;
+    object-fit: contain;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+  }
   
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
@@ -135,13 +149,32 @@ const HouseEmblem = styled.span`
   }
 `;
 
-const HouseName = styled.h3`
-  color: ${props => props.color};
-  font-family: 'Cinzel', serif;
-  font-size: 1.3rem;
-  font-weight: 600;
-  text-shadow: 0 1px 5px ${props => props.color}50;
-`;
+// Helper component to render emblem as image or text
+const EmblemRenderer = ({ emblem, delay, alt }) => {
+  console.log('CapacitySetup - House:', alt, 'Emblem:', emblem);
+  
+  // Force PNG image rendering for all houses
+  const houseName = alt?.split(' ')[0]; // Extract house name from "Gryffindor emblem"
+  const imagePath = emblem.includes('/media/') ? emblem : `/media/${houseName}.png?v=3`;
+  
+  return (
+    <HouseEmblem delay={delay}>
+      <img 
+        src={imagePath} 
+        alt={alt || 'House emblem'} 
+        onError={(e) => {
+          console.error('CapacitySetup - Image failed to load:', imagePath, 'Original emblem:', emblem);
+          e.target.style.display = 'none';
+          e.target.nextSibling.style.display = 'inline';
+        }} 
+        onLoad={() => {
+          console.log('CapacitySetup - Image loaded successfully:', imagePath);
+        }}
+      />
+      <span style={{display: 'none', fontSize: '7rem'}}>{emblem}</span>
+    </HouseEmblem>
+  );
+};
 
 const HouseTraits = styled.p`
   color: #C0C0C0;
@@ -243,14 +276,14 @@ const CapacitySetup = ({ onSetupComplete }) => {
     },
     { 
       name: 'Ravenclaw', 
-      emblem: '🦅', 
+      emblem: '/media/Ravenclaw.png', 
       color: '#0E1A40', 
       traits: 'Intelligent, Wise, Creative',
       delay: 1
     },
     { 
       name: 'Slytherin', 
-      emblem: '🐍', 
+      emblem: '/media/Slytherin.png', 
       color: '#1A472A', 
       traits: 'Ambitious, Cunning, Resourceful',
       delay: 1.5
@@ -318,8 +351,7 @@ const CapacitySetup = ({ onSetupComplete }) => {
         {houses.map(house => (
           <HouseInputCard key={house.name} color={house.color}>
             <HouseHeader>
-              <HouseEmblem delay={house.delay}>{house.emblem}</HouseEmblem>
-              <HouseName color={house.color}>{house.name}</HouseName>
+              <EmblemRenderer emblem={house.emblem} delay={house.delay} alt={`${house.name} emblem`} />
             </HouseHeader>
             <HouseTraits>{house.traits}</HouseTraits>
             <CapacityInput

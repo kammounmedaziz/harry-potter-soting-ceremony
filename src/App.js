@@ -7,6 +7,7 @@ import HouseDisplay from './components/HouseDisplay';
 import ResultsPanel from './components/ResultsPanel';
 import Statistics from './components/Statistics';
 import LoadingScreen from './components/LoadingScreen';
+import WelcomeModal from './components/WelcomeModal';
 import { GlobalStyles } from './styles/GlobalStyles';
 import { useSortingCeremony } from './hooks/useSortingCeremony';
 
@@ -70,9 +71,11 @@ function App() {
     sortingResults,
     isHatActive,
     isSorting,
+    welcomeModal,
     setupCapacities,
     sortStudent,
-    clearResults
+    clearResults,
+    closeWelcomeModal
   } = useSortingCeremony();
 
   const handleLoadingComplete = () => {
@@ -119,6 +122,15 @@ function App() {
             </>
           )}
         </ContentWrapper>
+        
+        {/* Welcome Modal */}
+        <WelcomeModal
+          isVisible={welcomeModal.isVisible}
+          studentName={welcomeModal.studentName}
+          house={welcomeModal.house}
+          onClose={closeWelcomeModal}
+          autoCloseDelay={6000}
+        />
       </AppContainer>
     </>
   );

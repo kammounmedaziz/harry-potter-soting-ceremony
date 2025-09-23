@@ -218,6 +218,49 @@ const HouseChip = styled.span`
   transition: all 0.3s ease;
 `;
 
+// Helper component to render emblem as image or text
+const SortingEmblemRenderer = ({ emblem, alt }) => {
+  const isImagePath = emblem && (emblem.includes('/') || emblem.includes('.png') || emblem.includes('.jpg') || emblem.includes('.jpeg'));
+  
+  if (isImagePath) {
+    return (
+      <div style={{
+        background: 'rgba(10, 10, 10, 0.9)',
+        borderRadius: '15px',
+        padding: '1rem',
+        border: '2px solid rgba(255, 255, 255, 0.1)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <img 
+          src={emblem} 
+          alt={alt || 'House emblem'} 
+          style={{ 
+            width: '4rem', 
+            height: '4rem', 
+            objectFit: 'contain'
+          }} 
+        />
+      </div>
+    );
+  }
+  
+  return (
+    <div style={{
+      background: 'rgba(10, 10, 10, 0.9)',
+      borderRadius: '15px',
+      padding: '1rem',
+      border: '2px solid rgba(255, 255, 255, 0.1)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      <span style={{ fontSize: '4rem' }}>{emblem}</span>
+    </div>
+  );
+};
+
 const SortingSection = ({ onSortStudent, isSorting, houses }) => {
   const [studentName, setStudentName] = useState('');
 
@@ -293,8 +336,7 @@ const SortingSection = ({ onSortStudent, isSorting, houses }) => {
               color={house.color}
               available={house.capacity > 0}
             >
-              <span>{house.emblem}</span>
-              <span>{house.name}</span>
+              <SortingEmblemRenderer emblem={house.emblem} alt={`${house.name} emblem`} />
               <span>({house.capacity})</span>
             </HouseChip>
           ))}

@@ -16,6 +16,11 @@ export const useSortingCeremony = () => {
   const [sortingResults, setSortingResults] = useState([]);
   const [isHatActive, setIsHatActive] = useState(false);
   const [isSorting, setIsSorting] = useState(false);
+  const [welcomeModal, setWelcomeModal] = useState({
+    isVisible: false,
+    studentName: '',
+    house: null
+  });
 
   const addResult = (message) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -80,6 +85,14 @@ export const useSortingCeremony = () => {
       setTimeout(() => {
         addResult(`\n🌟 ${selectedHouse.emblem} ${studentName.toUpperCase()} → ${selectedHouse.name.toUpperCase()}! ${selectedHouse.emblem} 🌟`);
         addResult(`🎩 "${quote}"`);
+        
+        // Show welcome modal
+        setWelcomeModal({
+          isVisible: true,
+          studentName: studentName,
+          house: selectedHouse
+        });
+        
         addResult(`🏰 Welcome to ${selectedHouse.name} House!`);
         addResult(`👤 Founder: ${selectedHouse.founder}`);
         addResult(`👻 House Ghost: ${selectedHouse.ghost}`);
@@ -141,13 +154,23 @@ export const useSortingCeremony = () => {
     addResult(`🧹 The chronicle has been cleared by ancient magic.`);
   };
 
+  const closeWelcomeModal = () => {
+    setWelcomeModal({
+      isVisible: false,
+      studentName: '',
+      house: null
+    });
+  };
+
   return {
     houses,
     sortingResults,
     isHatActive,
     isSorting,
+    welcomeModal,
     setupCapacities,
     sortStudent,
-    clearResults
+    clearResults,
+    closeWelcomeModal
   };
 };

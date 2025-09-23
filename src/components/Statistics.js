@@ -93,13 +93,45 @@ const HouseLabel = styled.div`
 `;
 
 const HouseEmblem = styled.span`
-  font-size: 1.2rem;
+  font-size: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 10, 0.9);
+  border-radius: 12px;
+  padding: 0.8rem;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  
+  img {
+    width: 4rem;
+    height: 4rem;
+    object-fit: contain;
+  }
 `;
 
-const HouseName = styled.span`
-  color: ${props => props.color};
-  font-size: 0.9rem;
-`;
+// Helper component to render emblem as image or text
+const StatisticsEmblemRenderer = ({ emblem, alt }) => {
+  console.log('Statistics - House:', alt, 'Emblem:', emblem);
+  
+  // Force PNG image rendering for all houses
+  const houseName = alt?.split(' ')[0]; // Extract house name
+  const imagePath = emblem.includes('/media/') ? emblem : `/media/${houseName}.png?v=3`;
+  
+  return (
+    <HouseEmblem>
+      <img 
+        src={imagePath} 
+        alt={alt || 'House emblem'} 
+        onError={(e) => {
+          console.error('Statistics - Image failed to load:', imagePath);
+          e.target.style.display = 'none';
+          e.target.nextSibling.style.display = 'inline';
+        }}
+      />
+      <span style={{display: 'none', fontSize: '4rem'}}>{emblem}</span>
+    </HouseEmblem>
+  );
+};
 
 const DistributionBar = styled.div`
   flex: 1;
@@ -200,10 +232,7 @@ const Statistics = ({ houses }) => {
               return (
                 <DistributionItem key={house.name}>
                   <HouseLabel>
-                    <HouseEmblem>{house.emblem}</HouseEmblem>
-                    <HouseName color={house.color}>
-                      {house.name}
-                    </HouseName>
+                    <StatisticsEmblemRenderer emblem={house.emblem} alt={`${house.name} emblem`} />
                   </HouseLabel>
                   
                   <DistributionBar>

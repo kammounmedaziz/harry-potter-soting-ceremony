@@ -75,10 +75,23 @@ const HouseHeader = styled.div`
 `;
 
 const HouseEmblem = styled.span`
-  font-size: 3rem;
+  font-size: 4.5rem;
   margin-right: 1rem;
   animation: float 4s ease-in-out infinite;
   animation-delay: ${props => props.delay}s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 10, 0.9);
+  border-radius: 15px;
+  padding: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  
+  img {
+    width: 4.5rem;
+    height: 4.5rem;
+    object-fit: contain;
+  }
   
   @keyframes float {
     0%, 100% { transform: translateY(0px) rotate(0deg); }
@@ -87,6 +100,32 @@ const HouseEmblem = styled.span`
     75% { transform: translateY(-3px) rotate(-1deg); }
   }
 `;
+
+// Helper component to render emblem as image or text
+const DisplayEmblemRenderer = ({ emblem, delay, alt }) => {
+  console.log('HouseDisplay - House:', alt, 'Emblem:', emblem);
+  
+  // Force PNG image rendering for all houses
+  const imagePath = emblem.includes('/media/') ? emblem : `/media/${alt?.split(' ')[0]}.png?v=3`;
+  
+  return (
+    <HouseEmblem delay={delay}>
+      <img 
+        src={imagePath} 
+        alt={alt || 'House emblem'} 
+        onError={(e) => {
+          console.error('Image failed to load:', imagePath, 'Fallback to emoji:', emblem);
+          e.target.style.display = 'none';
+          e.target.nextSibling.style.display = 'inline';
+        }} 
+        onLoad={() => {
+          console.log('Image loaded successfully:', imagePath);
+        }}
+      />
+      <span style={{display: 'none', fontSize: '4.5rem'}}>{emblem}</span>
+    </HouseEmblem>
+  );
+};
 
 const HouseInfo = styled.div`
   flex: 1;
@@ -258,14 +297,12 @@ const HouseDisplay = ({ houses }) => {
           
           return (
             <HouseCard 
-              key={house.name} 
+              key={`${house.name}-${house.emblem}`}
               color={house.color}
               secondary={house.secondary}
             >
               <HouseHeader>
-                <HouseEmblem delay={index * 0.5}>
-                  {house.emblem}
-                </HouseEmblem>
+                <DisplayEmblemRenderer emblem={house.emblem} delay={index * 0.5} alt={`${house.name} emblem`} />
                 <HouseInfo>
                   <HouseName color={house.color}>
                     {house.name.toUpperCase()}

@@ -9,7 +9,7 @@ export const INITIAL_HOUSES = {
     traits: 'Brave, Daring, Chivalrous',
     element: 'Fire',
     founder: 'Godric Gryffindor',
-    emblem: '🦁',
+    emblem: '/media/Gryffindor.png?v=2',
     ghost: 'Nearly Headless Nick',
     commonRoom: 'Gryffindor Tower'
   },
@@ -23,7 +23,7 @@ export const INITIAL_HOUSES = {
     traits: 'Loyal, Patient, Fair',
     element: 'Earth',
     founder: 'Helga Hufflepuff',
-    emblem: '🦡',
+    emblem: '/media/Hufflepuff.png?v=2',
     ghost: 'Fat Friar',
     commonRoom: 'Near the Kitchens'
   },
@@ -37,7 +37,7 @@ export const INITIAL_HOUSES = {
     traits: 'Intelligent, Wise, Creative',
     element: 'Air',
     founder: 'Rowena Ravenclaw',
-    emblem: '🦅',
+    emblem: '/media/Ravenclaw.png?v=2',
     ghost: 'Grey Lady',
     commonRoom: 'Ravenclaw Tower'
   },
@@ -51,7 +51,7 @@ export const INITIAL_HOUSES = {
     traits: 'Ambitious, Cunning, Resourceful',
     element: 'Water',
     founder: 'Salazar Slytherin',
-    emblem: '🐍',
+    emblem: '/media/Slytherin.png?v=2',
     ghost: 'Bloody Baron',
     commonRoom: 'Slytherin Dungeon'
   }

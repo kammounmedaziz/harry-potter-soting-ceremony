@@ -1,18 +1,13 @@
 import React, { useRef, Suspense } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { useLoader } from '@react-three/fiber';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import styled, { keyframes } from 'styled-components';
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
+import * as THREE from 'three';
 
 // Magical loading animations
 const shimmer = keyframes`
   0%, 100% { opacity: 0.3; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.1); }
-`;
-
-const float = keyframes`
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
 `;
 
 const sparkle = keyframes`
@@ -49,14 +44,6 @@ const LoadingContainer = styled.div`
   }
 `;
 
-const HatContainer = styled.div`
-  width: 500px;
-  height: 500px;
-  margin-bottom: 2rem;
-  animation: ${float} 3s ease-in-out infinite;
-  overflow: visible;
-`;
-
 const LoadingText = styled.h1`
   font-family: 'Cinzel', serif;
   font-size: clamp(2rem, 5vw, 3rem);
@@ -67,7 +54,7 @@ const LoadingText = styled.h1`
     0 0 20px rgba(255, 215, 0, 0.6),
     0 0 40px rgba(255, 215, 0, 0.3),
     0 0 60px rgba(255, 215, 0, 0.2);
-  animation: ${shimmer} 2s ease-in-out infinite;
+  animation: ${shimmer} 2s ease-in-out infinite, gradientShift 3s ease infinite;
   background: linear-gradient(45deg, #d4af37, #ffd700, #d4af37);
   background-size: 200% 200%;
   -webkit-background-clip: text;
@@ -78,8 +65,6 @@ const LoadingText = styled.h1`
     0%, 100% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
   }
-  
-  animation: ${shimmer} 2s ease-in-out infinite, gradientShift 3s ease infinite;
 `;
 
 const SubText = styled.p`
@@ -181,98 +166,143 @@ const ProgressBar = styled.div`
   }
 `;
 
-// FBX Hat Component
-function FBXHat({ modelPath }) {
+// FBX Hat Component for Loading Screen
+function LoadingHat() {
   const hatRef = useRef();
-  const fbx = useLoader(FBXLoader, modelPath);
+  
+  // Load the FBX model
+  const fbx = useLoader(FBXLoader, '/models/hat.fbx');
+  
+  // Set up the model
+  React.useEffect(() => {
+    if (fbx) {
+      // Scale and position the model
+      fbx.scale.setScalar(0.02);
+      fbx.position.set(0, 0, 0);
+      
+      // Traverse and set up materials
+      fbx.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          
+          if (child.material) {
+            child.material.needsUpdate = true;
+          }
+        }
+      });
+    }
+  }, [fbx]);
   
   useFrame((state) => {
     if (hatRef.current) {
-      // Continuous spinning
-      hatRef.current.rotation.y = state.clock.elapsedTime * 0.8;
-      // Gentle floating
-      hatRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.3;
-      // Slight wobble
-      hatRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 1.5) * 0.1;
+      // Gentle floating and rotating animation
+      hatRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.3;
+      hatRef.current.rotation.y = state.clock.elapsedTime * 0.2;
     }
   });
 
   return (
-    <primitive 
-      ref={hatRef}
-      object={fbx} 
-      scale={0.05} 
-      position={[0, 0, 0]}
-    />
-  );
-}
-
-// Fallback Simple Hat Component
-function SimpleHat() {
-  const hatRef = useRef();
-  
-  useFrame((state) => {
-    if (hatRef.current) {
-      // Continuous spinning
-      hatRef.current.rotation.y = state.clock.elapsedTime * 0.8;
-      // Gentle floating
-      hatRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.3;
-      // Slight wobble
-      hatRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 1.5) * 0.1;
-    }
-  });
-
-  return (
-    <group ref={hatRef} scale={1.5}>
-      {/* Hat brim with glow */}
-      <mesh position={[0, -0.5, 0]} rotation={[0, 0, 0]}>
-        <cylinderGeometry args={[1.5, 1.5, 0.12, 32]} />
-        <meshStandardMaterial 
-          color="#2d1810" 
-          emissive="#4a2c14"
-          emissiveIntensity={0.3}
-        />
-      </mesh>
-      
-      {/* Hat cone with magical glow */}
-      <mesh position={[0, 0.3, 0]} rotation={[0, 0, 0.3]}>
-        <coneGeometry args={[1.0, 1.8, 32]} />
-        <meshStandardMaterial 
-          color="#1a0f08" 
-          emissive="#3d1e10"
-          emissiveIntensity={0.2}
-        />
-      </mesh>
-      
-      {/* Hat band */}
-      <mesh position={[0, -0.2, 0]}>
-        <cylinderGeometry args={[1.1, 1.1, 0.18, 32]} />
-        <meshStandardMaterial 
-          color="#8b4513" 
-          emissive="#b8601a"
-          emissiveIntensity={0.4}
-        />
-      </mesh>
-      
-      {/* Magical glow effect */}
-      <pointLight
-        position={[0, 0, 0]}
-        color="#ffd700"
-        intensity={3}
-        distance={5}
-      />
+    <group ref={hatRef}>
+      <primitive object={fbx} />
     </group>
   );
 }
 
-// Main Loading Hat Component with FBX support
-function LoadingHat() {
+// Sparkling Particles Component for Loading Screen
+function LoadingSparkleParticles() {
+  const particlesRef = useRef();
+  const particleCount = 25;
+  
+  // Create sparkle particles
+  const particles = React.useMemo(() => {
+    const positions = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+    const scales = new Float32Array(particleCount);
+    
+    for (let i = 0; i < particleCount; i++) {
+      // Position particles around the hat in a wider area
+      const radius = 1.2 + Math.random() * 0.8;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.random() * Math.PI;
+      
+      positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+      positions[i * 3 + 1] = radius * Math.cos(phi);
+      positions[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+      
+      // Golden sparkle colors
+      colors[i * 3] = 1; // red
+      colors[i * 3 + 1] = 0.8 + Math.random() * 0.2; // green (golden)
+      colors[i * 3 + 2] = 0.3 + Math.random() * 0.2; // blue
+      
+      scales[i] = Math.random() * 0.3 + 0.1;
+    }
+    
+    return { positions, colors, scales };
+  }, []);
+  
+  useFrame((state) => {
+    if (particlesRef.current) {
+      const positions = particlesRef.current.geometry.attributes.position.array;
+      const colors = particlesRef.current.geometry.attributes.color.array;
+      
+      for (let i = 0; i < particleCount; i++) {
+        // Gentle floating motion
+        positions[i * 3] += Math.sin(state.clock.elapsedTime + i) * 0.002;
+        positions[i * 3 + 1] += Math.cos(state.clock.elapsedTime + i) * 0.002;
+        positions[i * 3 + 2] += Math.sin(state.clock.elapsedTime * 0.5 + i) * 0.002;
+        
+        // Twinkling effect by varying opacity through colors
+        const twinkle = Math.sin(state.clock.elapsedTime * 4 + i) * 0.5 + 0.5;
+        colors[i * 3] = twinkle; // red
+        colors[i * 3 + 1] = (0.8 + Math.random() * 0.2) * twinkle; // green
+        colors[i * 3 + 2] = (0.3 + Math.random() * 0.2) * twinkle; // blue
+      }
+      
+      particlesRef.current.geometry.attributes.position.needsUpdate = true;
+      particlesRef.current.geometry.attributes.color.needsUpdate = true;
+    }
+  });
+  
   return (
-    <Suspense fallback={<SimpleHat />}>
-      <FBXHat modelPath="/models/hat.fbx" />
-    </Suspense>
+    <points ref={particlesRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={particleCount}
+          array={particles.positions}
+          itemSize={3}
+        />
+        <bufferAttribute
+          attach="attributes-color"
+          count={particleCount}
+          array={particles.colors}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.06}
+        vertexColors
+        transparent
+        opacity={0.9}
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
   );
 }
+
+// Container for the 3D Hat
+const HatContainer = styled.div`
+  width: 200px;
+  height: 200px;
+  margin: 2rem 0;
+  
+  @media (max-width: 768px) {
+    width: 150px;
+    height: 150px;
+    margin: 1rem 0;
+  }
+`;
 
 // Main Loading Screen Component
 export default function LoadingScreen({ onLoadingComplete }) {
@@ -296,31 +326,33 @@ export default function LoadingScreen({ onLoadingComplete }) {
         <div className="sparkle">✧</div>
       </MagicalSparkles>
       
+      <LoadingText>
+        Awakening the Sorting Hat
+      </LoadingText>
+      
       <HatContainer>
         <Canvas
           camera={{ position: [0, 0, 5], fov: 50 }}
           style={{ width: '100%', height: '100%' }}
         >
-          {/* Magical lighting */}
           <ambientLight intensity={0.4} />
-          <pointLight position={[5, 5, 5]} intensity={1} color="#ffd700" />
-          <pointLight position={[-5, -5, -5]} intensity={0.8} color="#4169e1" />
-          <spotLight
-            position={[0, 10, 0]}
-            angle={0.5}
-            penumbra={1}
-            intensity={2}
-            color="#ffd700"
-            target-position={[0, 0, 0]}
+          <directionalLight 
+            position={[10, 10, 5]} 
+            intensity={1}
+            castShadow
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
           />
-          
-          <LoadingHat />
+          <pointLight position={[-10, -10, -10]} intensity={0.3} />
+          {/* Add extra lights for glowing effect */}
+          <pointLight position={[0, 0, 3]} intensity={0.8} color="#ffd700" />
+          <pointLight position={[2, 2, 3]} intensity={0.5} color="#ffed4e" />
+          <Suspense fallback={null}>
+            <LoadingHat />
+            <LoadingSparkleParticles />
+          </Suspense>
         </Canvas>
       </HatContainer>
-      
-      <LoadingText>
-        Awakening the Sorting Hat
-      </LoadingText>
       
       <SubText>
         "I'll eat myself if you can find a smarter hat than me..."
